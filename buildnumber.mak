@@ -1,0 +1,6 @@
+BUILD_NUMBER_CFLAGS  = -D__BUILD_DATE__=$$(date +'%Y%m%d')
+BUILD_NUMBER_CFLAGS += -D__BUILD_NUMBER__=$$(cat $(BUILD_NUMBER_FILE))
+
+$(BUILD_NUMBER_FILE): $(OBJECTS)
+	@if ! test -f $(BUILD_NUMBER_FILE); then echo 0 > $(BUILD_NUMBER_FILE); fi
+	@echo $$(($$(cat $(BUILD_NUMBER_FILE)) + 1)) > $(BUILD_NUMBER_FILE)
