@@ -7,6 +7,9 @@ CVars* GlobalCVars;
     
 CVars::CVars() {
     entries_Size = 0;
+    for(int i = 0; i<255; i++) {
+        entries[i] = 0;
+    }
     //      name     data
     Reg_Var("d_window_name",(void*)&L"Veng");
     int DbgMode = 0;
@@ -37,14 +40,14 @@ void CVars::Reg_Var(std::string name, void* defValue) {
     cvar_entry* ent = (cvar_entry*)malloc(sizeof(cvar_entry));
     ent->data = defValue;
     ent->name = &name;
-    entries[entries_Size] = *ent;
+    entries[entries_Size] = ent;
     entries_Size++; 
 }
 
 void* CVars::Get_Cvar(std::string name) {
     for(int i = 0; i<entries_Size; i++) {
-        if(entries[i].name->compare(name.c_str()) == 0) {
-            return entries[i].data;
+        if(entries[i]->name->compare(name.c_str()) == 0) {
+            return entries[i]->data;
         }
     }
     return (void*)&"UnknownData";
@@ -52,9 +55,10 @@ void* CVars::Get_Cvar(std::string name) {
 
 void CVars::Set_Cvar(std::string name, void* data) {
     for(int i = 0; i<entries_Size; i++) {
-        if(entries[i].name->compare(name.c_str()) == 0) {
+        printf("%i\n",i);
+        if(entries[i]->name->compare(name.c_str()) == 0) {
             printf("setting %s to %p\n",name.c_str(),data);
-            entries[i].data = data;
+            entries[i]->data = data;
         }
     }
 }

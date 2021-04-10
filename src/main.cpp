@@ -40,7 +40,6 @@ int main() {
 	#endif
 
 	fs->addFileArchive("rsc");
-	fs->addFileArchive("/home/techsink/models/");
 	#ifdef DEBUG
 	fs->addFileArchive("../rsc");
 	#endif

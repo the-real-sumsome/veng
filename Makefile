@@ -18,7 +18,7 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG
+CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -g
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -lIrrlicht -ldl -lncurses -lcurses -o $@ $(LDFLAGS)
@@ -44,7 +44,7 @@ clean:
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	cd build && ./venglinux $(ARGS)
 
-debug: preprun
+debug: $(BUILD_DIR)/$(TARGET_EXEC)
 	cd build && gdb --args ./venglinux $(ARGS)
 
 package: preprun LICENSE README.md

@@ -18,7 +18,7 @@ namespace VengManagement {
         CVars();
     private:
         void Reg_Var(std::string name, void* defValue);
-        cvar_entry entries[255];
+        cvar_entry *entries[255];
         int entries_Size;
     };
 

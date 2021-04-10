@@ -25,7 +25,7 @@ void PlayerNode::render()
     cam->setPosition(core::vector3df(pos.X,pos.Y,pos.Z));
     
     video::IVideoDriver* driver = SceneManager->getVideoDriver();
-
+    
     driver->draw3DBox(MeshNode->getBoundingBox());
 }
 
