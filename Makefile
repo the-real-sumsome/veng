@@ -18,10 +18,10 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -g
+CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -g -DVERSION=1
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -lIrrlicht -ldl -o $@ $(LDFLAGS)
+	$(CXX) $(OBJS) -lpthread -lIrrlicht -ldl -o $@ $(LDFLAGS)
 
 # c source
 $(OBJECT_DIR)/%.c.o: %.c $(BUILD_NUMBER_FILE)

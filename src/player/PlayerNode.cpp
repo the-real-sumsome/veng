@@ -1,7 +1,7 @@
 #include "Frames.hpp"
 #include "PlayerNode.hpp"
 
-PlayerNode::PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id) : scene::ISceneNode(parent, mgr, id) {
+PlayerNode::PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id, bool camEn) : scene::ISceneNode(parent, mgr, id) {
     Mesh = SceneManager->getMesh("mdl/v.mdl");
     MeshNode = mgr->addAnimatedMeshSceneNode(Mesh,this);
     PlayerNameText = mgr->addTextSceneNode(mgr->getGUIEnvironment()->getBuiltInFont(),core::stringw("Player").c_str(),video::SColor(100,0,0,0),this);
@@ -9,7 +9,9 @@ PlayerNode::PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32
     TPos.Y+=40;
     PlayerNameText->setPosition(TPos);
     MeshNode->setFrameLoop(ANIM_IDLE);
-    cam = mgr->addCameraSceneNode(this);
+    if(camEn) {
+        cam = mgr->addCameraSceneNode(this);
+    }
 }
 
 void PlayerNode::OnRegisterSceneNode() {
@@ -21,11 +23,8 @@ void PlayerNode::OnRegisterSceneNode() {
 
 void PlayerNode::render()
 {   
-    core::vector3df pos = getPosition();
-    cam->setPosition(core::vector3df(pos.X,pos.Y,pos.Z));
-    
     video::IVideoDriver* driver = SceneManager->getVideoDriver();
-    
+
     driver->draw3DBox(MeshNode->getBoundingBox());
 }
 

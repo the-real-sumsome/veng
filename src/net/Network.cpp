@@ -1,5 +1,6 @@
 #include "../player/Player.hpp"
 #include "Network.hpp"
+#include "../management/Console.hpp"
 
 #include <string.h>
 #include <stdlib.h>
@@ -9,87 +10,86 @@
 #include <arpa/inet.h> 
 #include <netdb.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 using namespace irr;
 
-NetConnection::NetConnection(char* host, int port) {
-    SockFd = socket(AF_INET,SOCK_NONBLOCK,0);
-    if(SockFd < 0) {
-        puts("Error: couldnt open socket");
+#ifndef VERSION
+#define VERSION 1
+#endif
+// so it looks better in my editor
+
+NetConnection::NetConnection(char* host, char* port) {
+    asio::io_context io;
+    tcp::resolver resolver(io);
+    tcp::resolver::results_type endpoints = resolver.resolve(host, port);    
+    socket = new tcp::socket(io);
+    asio::connect(*socket, endpoints);
+    char sVersion = read_byte();
+    printf("Server running veng version %c",sVersion);
+    if(sVersion != VERSION) {
+        printf("Warning: Server version (%i) != client version (%i)",sVersion,VERSION);
     }
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-    server = gethostbyname(host);
-    memset(&serv_addr,0,sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    memccpy((char *)&serv_addr.sin_addr.s_addr,
-        (char *)server->h_addr,
-        server->h_length,1);
-    serv_addr.sin_port = htons(port);
-    inet_pton(AF_INET, host, &serv_addr.sin_addr);
-    if (connect(SockFd,(struct sockaddr*)(&serv_addr),sizeof(serv_addr)) < 0)
-        puts("Error: couldnt connect");
-    int CVersion = 0;
-    VengReadInt(SockFd,&CVersion);
-    printf("Server version: %i",CVersion);
-    if(CVersion != 1) {
-        puts("Warning: Version mismatch");
-    }
-    VengWriteInt(SockFd,1);
-    State = 1;
+    motd = "Unknown";
 }
 
 void NetConnection::SceneUpdate(irr::IrrlichtDevice* device, void* pev) {
-    VengSetBlockingMode(0);
-    int cmd;
-    int retl = recv(SockFd,&cmd,sizeof(cmd),0);
-    if(retl == -1) {
-        VengSetBlockingMode(1);
+    if(!socket->available()) {
         return;
     }
-    VengSetBlockingMode(1);
+
+    char buffer[1];
+    size_t bytesRead = asio::read(*socket, asio::buffer(buffer, 1));
+
     irr::video::IVideoDriver* driver = device->getVideoDriver();
     irr::scene::ISceneManager* scene = device->getSceneManager();
     VengPlayer* tpev = (VengPlayer*)pev;
-    printf("Doing command %i",cmd);
-    time_t now;
-    char* reason;
-    char* from;
+
     char* message;
-    char* messageglob;
-    localtime(&now);
-    switch(cmd) {
-        case 0: // heartbeat/get time
-            VengWriteInt(SockFd,(int)now);
+    char* from;
+    char* reason;
+    switch(buffer[0]) {
+        case 0x00: // Server Info
+            motd = read_string();
+            GlobConsole->Logf("MOTD: %s\n",motd);
             break;
-        case 1: // kick/disconnect
-            reason = VengReadString(SockFd);
-            printf("Disconnected: %s\n",reason);
-            State = 0;
+        case 0x01: // Server Disconnect
+            reason = read_string();
+            GlobConsole->Logf("Disconnected: %s\n",reason);
             break;
-        case 2: // chat
-            from = VengReadString(SockFd);
-            message = VengReadString(SockFd);
-            printf("Message from %s: %s",message);
+        case 0x02: // Chat Message
+            from = read_string();
+            message = read_string();
+            GlobConsole->Logf("%s: %s",from,message);
             break;
-        case 3: // globchat
-            messageglob = VengReadString(SockFd);
-            printf("Globmessage: %s",messageglob);
-            break;
-        case 4: // load new skybox
-            scene->addSkyBoxSceneNode(
-                driver->getTexture(VengReadString(SockFd)),
-                driver->getTexture(VengReadString(SockFd)),
-                driver->getTexture(VengReadString(SockFd)),
-                driver->getTexture(VengReadString(SockFd)),
-                driver->getTexture(VengReadString(SockFd)),
-                driver->getTexture(VengReadString(SockFd)));
-            break;
-        case 5: // request player resync
-            tpev->SyncNet(*this);
-            break;
-        default:
-            printf("unknown command? %i\n",cmd);
+        case 0x03: // Global Message
+            message = read_string();
+            GlobConsole->Logf("%s",message);
             break;
     }
+}
+
+char* NetConnection::GetMOTD() {
+    return motd;
+}
+
+char NetConnection::read_byte() {
+    char buffer[1];
+    asio::read(*socket, asio::buffer(buffer, 1));
+    return buffer[0];
+}
+
+char* NetConnection::read_string() {
+    int size = 0;
+    asio::read(*socket, asio::buffer(&size, sizeof(int)));
+    char* str = (char*)malloc(size+1);
+    asio::read(*socket, asio::buffer(str, size));
+    return str;
+}
+
+int NetConnection::read_int() {
+    int buffer = 0;
+    asio::read(*socket, asio::buffer(&buffer, sizeof(int)));
+    return buffer;
 }

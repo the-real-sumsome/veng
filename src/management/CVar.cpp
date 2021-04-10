@@ -1,4 +1,5 @@
 #include "CVar.hpp"
+#include "Console.hpp"
 #include <stdio.h>
 
 using namespace VengManagement;
@@ -28,15 +29,15 @@ CVars::CVars() {
     Reg_Var("dbg_internal_gui",0);
     #endif
 
-    printf("%i variables reigstered.\n",entries_Size);
+    GlobConsole->Logf("%i variables reigstered.\n",entries_Size);
 }
 
 void CVars::Reg_Var(std::string name, void* defValue) {
     if(entries_Size == 255) {
-        puts("Maximum entry size reached");
+        GlobConsole->Log("Maximum entry size reached\n");
         abort();
     }
-    printf("Registering CVar \"%s\"\t\t\twith data at %p.\n",name.c_str(),defValue);
+    GlobConsole->Logf("Registering CVar \"%s\"\t\t\twith data at %p.\n",name.c_str(),defValue);
     cvar_entry* ent = (cvar_entry*)malloc(sizeof(cvar_entry));
     ent->data = defValue;
     ent->name = &name;

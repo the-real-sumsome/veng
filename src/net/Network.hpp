@@ -3,16 +3,25 @@
 
 #include <stdio.h>
 #include <irrlicht/irrlicht.h>
-#include "Serialization.h"
+#include <asio.hpp>
+
+using asio::ip::tcp;
 
 class NetConnection {
 public:
-    FILE* Strm;
-    NetConnection(char* host, int port);
+    NetConnection(char* host, char* port);
     void SceneUpdate(irr::IrrlichtDevice* device, void* pev);
+    char* GetMOTD();
     void Close();
-    int SockFd;
     int State;
+private:
+    int Ready;
+    tcp::socket* socket;
+    char* motd;
+    char read_byte();
+    char* read_string();
+    int read_int();
+    int blocking;
 };
 
 #endif

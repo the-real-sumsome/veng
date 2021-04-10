@@ -1,6 +1,7 @@
 #include <iostream>
 #include <irrlicht/irrlicht.h>
 #include "management/CVar.hpp"
+#include "management/Console.hpp"
 #include "player/Player.hpp"
 #include "net/Server.hpp"
 #include "player/PlayerNode.hpp"
@@ -18,20 +19,23 @@ VengPlayer* cPlayer;
 #define IFARG_CASE(S) } else if(strcmp(argv[i],S)==0) {
 
 int main(int argc, char** argv) {
-	VengEventReceiver receiver;
 	NetConnection* currconn;
 	int* connected = (int*)malloc(sizeof(int));
 	*connected = 0;
 	int novars = 0;
 
-	for(int i = 0; i<argc; i++) {
+	for(int i = 1; i<argc; i++) {
 		if(strcmp(argv[i],"dev")==0) {
 			
 		IFARG_CASE("net")
 			char* serv = argv[i+1];
 			printf("Conencting to %s on port 8364\n");
-			currconn = new NetConnection("127.0.0.1",8364);
+			currconn = new NetConnection(serv,"8364");
 			connected = &currconn->State;
+			if(!connected) {
+				puts("Error: unable to connect to remote");
+				exit(1);
+			}
 		IFARG_CASE("host")
 			VengServer();
 			exit(0);
@@ -43,8 +47,16 @@ int main(int argc, char** argv) {
 		
 	}
 
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480),16,false,true,false,&receiver);
+	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480),16,false,true,false);
 
+    SAppContext context;
+    context.device = device;
+
+    VengEventReceiver receiver = VengEventReceiver(context);
+    device->setEventReceiver(&receiver);
+
+	GlobConsole = new VengConsole(device);
+	
 	if(!device)
 		return NULL;
 	
@@ -84,6 +96,7 @@ int main(int argc, char** argv) {
 
 	guienv->addStaticText(L"VENG: Preview Build",
         	rect<s32>(0,0,260,22), false);
+
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
 	const f32 MOVEMENT_SPEED = 5.f;
@@ -96,7 +109,7 @@ int main(int argc, char** argv) {
     }    
 
 	PlayerNode *pNode =
-        new PlayerNode(smgr->getRootSceneNode(), smgr, 666);
+        new PlayerNode(smgr->getRootSceneNode(), smgr, 666, true);
 	VengPlayer *pObj = new VengPlayer();
 	pObj->pN = pNode;
 
@@ -105,9 +118,7 @@ int main(int argc, char** argv) {
 		vars.Set_Cvar("d_internal_pobjc",pObj);
 	}
 
-	if(*connected) {
-		VengWriteInt(currconn->SockFd,1); // ready
-	}
+
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
@@ -121,6 +132,9 @@ int main(int argc, char** argv) {
 		driver->endScene();
 		if(*connected) {
 			currconn->SceneUpdate(device,pObj);
+		}
+		if(receiver.IsKeyDown(KEY_TAB)) {
+			GlobConsole->Open();
 		}
 		int fps = driver->getFPS();
 		core::stringw tmp(L"Veng: ");

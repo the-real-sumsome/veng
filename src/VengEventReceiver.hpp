@@ -2,6 +2,11 @@
 #define __INPUT_HPP__
 #include <irrlicht/irrlicht.h>
 
+struct SAppContext
+{
+    irr::IrrlichtDevice *device;
+};
+
 // Veng engine event receiver for irrlicht
 class VengEventReceiver : public irr::IEventReceiver
 {
@@ -10,10 +15,11 @@ public:
 
     virtual bool IsKeyDown(irr::EKEY_CODE keyCode) const;
 
-    VengEventReceiver();
+    VengEventReceiver(SAppContext & context);
 
 private:
     bool KeyIsDown[irr::KEY_KEY_CODES_COUNT];
+    SAppContext & Context;
 };
 
 #endif

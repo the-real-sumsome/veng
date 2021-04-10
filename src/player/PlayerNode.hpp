@@ -6,7 +6,7 @@ using namespace irr;
 
 class PlayerNode : public scene::ISceneNode {
 public:
-    PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id);
+    PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id, bool camEn);
     virtual void render();
     virtual void OnRegisterSceneNode();
     virtual const core::aabbox3d<f32>& getBoundingBox() const;
