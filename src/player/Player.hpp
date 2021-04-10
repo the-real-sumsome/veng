@@ -1,6 +1,7 @@
 #ifndef __PLAYER_HPP__
 #define __PLAYER_HPP__
 
+#include "../net/Network.hpp"
 #include "PlayerNode.hpp"
 
 class VengPlayer {
@@ -16,6 +17,7 @@ public:
     int Ammo556mm;
 
     VengPlayer();
+    void SyncNet(NetConnection net);
 private:
 
 };

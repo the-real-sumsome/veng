@@ -3,21 +3,21 @@
 #include <stdio.h>
 
 namespace VengNet {
-    void WriteByte(FILE* Stream, char C);
+    void WriteByte(int Stream, char C);
 
-    void WriteInt(FILE* Stream, int I);
+    void WriteInt(int Stream, int I);
 
-    void WriteString(FILE* Stream, char* S);
+    void WriteString(int Stream, char* S);
 
-    void WriteFloat(FILE* Stream, float F);
+    void WriteFloat(int Stream, float F);
 
-    char ReadByte(FILE* Stream);
+    char ReadByte(int Stream);
 
-    int ReadInt(FILE* Stream);
+    int ReadInt(int Stream);
 
-    float ReadFloat(FILE* Stream);
+    float ReadFloat(int Stream);
 
-    char* ReadString(FILE* Stream);
+    char* ReadString(int Stream);
 }
 
 #endif

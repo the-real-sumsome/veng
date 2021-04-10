@@ -9,47 +9,47 @@
 
 using namespace VengNet;
 
-void WriteByte(FILE* Stream, char C) {
-    fwrite(&C,sizeof(char),1,Stream);
+void WriteByte(int Stream, char C) {
+    send(Stream,&C,sizeof(char),0);
 }
 
-void WriteInt(FILE* Stream, int I) {
-    fwrite(&I,sizeof(int),1,Stream);
+void WriteInt(int Stream, int I) {
+    send(Stream,&I,sizeof(int),0);
 }
 
-void WriteString(FILE* Stream, char* S) {
+void WriteString(int Stream, char* S) {
     size_t stringlength = strlen(S);
-    fwrite(&stringlength,sizeof(size_t),1,Stream);
-    fwrite(S,stringlength,1,Stream);
+    send(Stream,&stringlength,sizeof(size_t),0);
+    send(Stream,S,stringlength,0);
 }
 
-void WriteFloat(FILE* Stream, float F) {
-    fwrite(&F,sizeof(float),1,Stream);
+void WriteFloat(int Stream, float F) {
+    send(Stream,&F,sizeof(float),0);
 }
 
-char ReadByte(FILE* Stream) {
+char ReadByte(int Stream) {
     char x = 0;
-    fread(&x,1,1,Stream);
+    recv(Stream,&x,1,0);
     return x;
 }
 
-int ReadInt(FILE* Stream) {
+int ReadInt(int Stream) {
     int x = 0;
-    fread(&x,sizeof(int),1,Stream);
+    recv(Stream,&x,sizeof(int),0);
     return x;
 }
 
-float ReadFloat(FILE* Stream) {
+float ReadFloat(int Stream) {
     float x = 0;
-    fread(&x,sizeof(float),1,Stream);
+    recv(Stream,&x,sizeof(float),0);
     return x;
 }
 
-char* ReadString(FILE* Stream) {
+char* ReadString(int Stream) {
     char* str;
     size_t strleng = 0;
-    fread(&strleng,sizeof(size_t),1,Stream);
+    recv(Stream,&strleng,sizeof(size_t),0);
     str = (char*)malloc(strleng);
-    fread(&str,strleng,1,Stream);
+    recv(Stream,&strleng,sizeof(size_t),0);
     return str;
 }

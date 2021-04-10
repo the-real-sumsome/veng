@@ -2,6 +2,7 @@
 #include <irrlicht/irrlicht.h>
 #include "management/CVar.hpp"
 #include "player/Player.hpp"
+#include "net/Server.hpp"
 #include "player/PlayerNode.hpp"
 #include "VengEventReceiver.hpp"
 
@@ -14,14 +15,29 @@ using namespace gui;
 
 VengPlayer* cPlayer;
 
-int main() {
+#define IFARG_CASE(S) } else if(strcmp(argv[i],S)==0) {
+
+int main(int argc, char** argv) {
 	VengEventReceiver receiver;
+	NetConnection* currconn;
+
+	for(int i = 0; i<argc; i++) {
+		if(strcmp(argv[i],"dev")==0) {
+			
+		IFARG_CASE("net")
+			currconn = new NetConnection(argv[++i],8364);
+		IFARG_CASE("serv")
+			VengServer();
+			exit(0);
+		}
+		
+	}
 
 	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480),16,false,true,false,&receiver);
 
 	if(!device)
 		return NULL;
-
+	
 	device->setWindowCaption(L"Veng");
 	device->setResizable(true);
 
@@ -86,6 +102,9 @@ int main() {
 		
 		guienv->drawAll();
 		driver->endScene();
+		if(!currconn) {
+			currconn->SceneUpdate(device);
+		}
 		int fps = driver->getFPS();
 		core::stringw tmp(L"Veng: ");
 		tmp += (wchar_t*)vars.Get_Cvar("d_window_name");

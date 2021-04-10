@@ -6,6 +6,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <time.h>
+
+using namespace irr;
 
 NetConnection::NetConnection(char* host, int port) {
     SockFd = socket(AF_INET,SOCK_STREAM,0);
@@ -23,10 +26,38 @@ NetConnection::NetConnection(char* host, int port) {
     serv_addr.sin_port = htons(port);
     if (connect(SockFd,(struct sockaddr*)(&serv_addr),sizeof(serv_addr)) < 0)
         puts("Error: couldnt connect");
-    int CVersion = VengNet::ReadInt((FILE*)SockFd);
+    int CVersion = VengNet::ReadInt(SockFd);
     printf("Server version: %i",CVersion);
     if(CVersion != 1) {
         puts("Warning: Version mismatch");
     }
-    VengNet::WriteInt((FILE*)SockFd,1);
+    VengNet::WriteInt(SockFd,1);
+}
+
+void NetConnection::SceneUpdate(irr::IrrlichtDevice* device) {
+    int cmd;
+    recv(SockFd,&cmd,sizeof(cmd),MSG_PEEK);
+    time_t now;
+    localtime(&now);
+    switch(cmd) {
+        case 0: // heartbeat/get time
+            VengNet::WriteInt(SockFd,(int)now);
+            break;
+        case 1: // kick/disconnect
+            char* reason = VengNet::ReadString(SockFd);
+            printf("Disconnected: %s\n",reason);
+            break;
+        case 2: // chat
+            char* from = VengNet::ReadString(SockFd);
+            char* message = VengNet::ReadString(SockFd);
+            printf("Message from %s: %s",message);
+            break;
+        case 3: // globchat
+            char* messageglob = VengNet::ReadString(SockFd);
+            printf("Globmessage: %s",messageglob);
+            break;
+        default:
+            printf("unknown command? %i\n",cmd);
+            break;
+    }
 }
