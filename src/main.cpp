@@ -1,6 +1,8 @@
 #include <iostream>
 #include <irrlicht/irrlicht.h>
-#include "input.hpp"
+#include "management/CVar.hpp"
+#include "player/PlayerNode.hpp"
+#include "VengEventReceiver.hpp"
 
 using namespace irr;
 using namespace core;
@@ -25,17 +27,25 @@ int main() {
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
 	IFileSystem* fs = device->getFileSystem();
 	fs->addFileArchive("rsc");
+	fs->addFileArchive("/home/techsink/models/");
 	#ifdef DEBUG
 	fs->addFileArchive("../rsc");
 	#endif
 
-	smgr->addCameraSceneNodeFPS();
-	device->getCursorControl()->setVisible(false);
+    smgr->addCameraSceneNodeFPS();
 
     smgr->setShadowColor(video::SColor(150,0,0,0));
 
+    smgr->addSkyBoxSceneNode(
+        driver->getTexture("tex/sky/d3.png"),
+        driver->getTexture("tex/sky/d2.png"),
+        driver->getTexture("tex/sky/d4.png"),
+        driver->getTexture("tex/sky/d5.png"),
+        driver->getTexture("tex/sky/d0.png"),
+        driver->getTexture("tex/sky/d1.png"));
+
 	guienv->addStaticText(L"VENG: Preview Build",
-        	rect<s32>(10,10,260,22), false);
+        	rect<s32>(0,0,260,22), false);
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
 	const f32 MOVEMENT_SPEED = 5.f;
@@ -44,18 +54,21 @@ int main() {
     {
         node->setPosition(core::vector3df(0,0,30));
         node->setMaterialTexture(0, driver->getTexture("tex/Bricks11.png"));
-        node->setMaterialFlag(video::EMF_LIGHTING, true);
+        node->setMaterialFlag(video::EMF_LIGHTING, false);
     }    
 
-    scene::ISceneNode * lnode = smgr->addLightSceneNode(0, core::vector3df(2,2,0),
-        video::SColorf(1.0f, 0.6f, 0.7f, 1.0f), 800.0f);
-	while(device->run()) {
+	PlayerNode *pNode =
+        new PlayerNode(smgr->getRootSceneNode(), smgr, 666);
+
+	while(device->run()) 
+	{
 		const u32 now = device->getTimer()->getTime();
         	const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // Time in seconds
         	then = now;
 
 		driver->beginScene(true,true,SColor(255,101,101,140));
 		smgr->drawAll();
+		
 		guienv->drawAll();
 		driver->endScene();
 		int fps = driver->getFPS();

@@ -1,5 +1,5 @@
 #include <irrlicht/irrlicht.h>
-#include "input.hpp"
+#include "VengEventReceiver.hpp"
 
 using namespace irr;
 

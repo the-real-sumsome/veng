@@ -1,0 +1,2 @@
+#define ANIM_LOOK_IDLE 0,31
+#define ANIM_IDLE 32,73
