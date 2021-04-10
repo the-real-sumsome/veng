@@ -20,18 +20,25 @@ VengPlayer* cPlayer;
 int main(int argc, char** argv) {
 	VengEventReceiver receiver;
 	NetConnection* currconn;
+	int* connected = (int*)malloc(sizeof(int));
+	*connected = 0;
 	int novars = 0;
 
 	for(int i = 0; i<argc; i++) {
 		if(strcmp(argv[i],"dev")==0) {
 			
 		IFARG_CASE("net")
-			currconn = new NetConnection(argv[++i],8364);
-		IFARG_CASE("serv")
+			char* serv = argv[i+1];
+			printf("Conencting to %s on port 8364\n");
+			currconn = new NetConnection("127.0.0.1",8364);
+			connected = &currconn->State;
+		IFARG_CASE("host")
 			VengServer();
 			exit(0);
 		IFARG_CASE("novar")
 			novars = 1;
+		} else {
+			puts("Unknown starting command, going as usual");
 		}
 		
 	}
@@ -98,6 +105,9 @@ int main(int argc, char** argv) {
 		vars.Set_Cvar("d_internal_pobjc",pObj);
 	}
 
+	if(*connected) {
+		VengWriteInt(currconn->SockFd,1); // ready
+	}
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
@@ -109,7 +119,7 @@ int main(int argc, char** argv) {
 		
 		guienv->drawAll();
 		driver->endScene();
-		if(!currconn) {
+		if(*connected) {
 			currconn->SceneUpdate(device,pObj);
 		}
 		int fps = driver->getFPS();

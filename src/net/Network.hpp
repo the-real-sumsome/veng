@@ -12,6 +12,7 @@ public:
     void SceneUpdate(irr::IrrlichtDevice* device, void* pev);
     void Close();
     int SockFd;
+    int State;
 };
 
 #endif

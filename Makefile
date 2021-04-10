@@ -21,7 +21,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -g
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -lIrrlicht -ldl -lncurses -lcurses -o $@ $(LDFLAGS)
+	$(CXX) $(OBJS) -lIrrlicht -ldl -o $@ $(LDFLAGS)
 
 # c source
 $(OBJECT_DIR)/%.c.o: %.c $(BUILD_NUMBER_FILE)

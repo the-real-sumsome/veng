@@ -6,13 +6,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h> 
 #include <netdb.h>
 #include <time.h>
 
 using namespace irr;
 
 NetConnection::NetConnection(char* host, int port) {
-    SockFd = socket(AF_INET,SOCK_STREAM,0);
+    SockFd = socket(AF_INET,SOCK_NONBLOCK,0);
     if(SockFd < 0) {
         puts("Error: couldnt open socket");
     }
@@ -25,20 +26,32 @@ NetConnection::NetConnection(char* host, int port) {
         (char *)server->h_addr,
         server->h_length,1);
     serv_addr.sin_port = htons(port);
+    inet_pton(AF_INET, host, &serv_addr.sin_addr);
     if (connect(SockFd,(struct sockaddr*)(&serv_addr),sizeof(serv_addr)) < 0)
         puts("Error: couldnt connect");
-    int CVersion = VengReadInt(SockFd);
+    int CVersion = 0;
+    VengReadInt(SockFd,&CVersion);
     printf("Server version: %i",CVersion);
     if(CVersion != 1) {
         puts("Warning: Version mismatch");
     }
     VengWriteInt(SockFd,1);
+    State = 1;
 }
 
 void NetConnection::SceneUpdate(irr::IrrlichtDevice* device, void* pev) {
+    VengSetBlockingMode(0);
     int cmd;
+    int retl = recv(SockFd,&cmd,sizeof(cmd),0);
+    if(retl == -1) {
+        VengSetBlockingMode(1);
+        return;
+    }
+    VengSetBlockingMode(1);
+    irr::video::IVideoDriver* driver = device->getVideoDriver();
+    irr::scene::ISceneManager* scene = device->getSceneManager();
     VengPlayer* tpev = (VengPlayer*)pev;
-    recv(SockFd,&cmd,sizeof(cmd),MSG_PEEK);
+    printf("Doing command %i",cmd);
     time_t now;
     char* reason;
     char* from;
@@ -52,6 +65,7 @@ void NetConnection::SceneUpdate(irr::IrrlichtDevice* device, void* pev) {
         case 1: // kick/disconnect
             reason = VengReadString(SockFd);
             printf("Disconnected: %s\n",reason);
+            State = 0;
             break;
         case 2: // chat
             from = VengReadString(SockFd);
@@ -63,15 +77,15 @@ void NetConnection::SceneUpdate(irr::IrrlichtDevice* device, void* pev) {
             printf("Globmessage: %s",messageglob);
             break;
         case 4: // load new skybox
-            device->getSceneManager()->addSkyBoxSceneNode(
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
-                device->getVideoDriver()->getTexture(VengReadString(SockFd)));
+            scene->addSkyBoxSceneNode(
+                driver->getTexture(VengReadString(SockFd)),
+                driver->getTexture(VengReadString(SockFd)),
+                driver->getTexture(VengReadString(SockFd)),
+                driver->getTexture(VengReadString(SockFd)),
+                driver->getTexture(VengReadString(SockFd)),
+                driver->getTexture(VengReadString(SockFd)));
             break;
-        case 5: // force player resync
+        case 5: // request player resync
             tpev->SyncNet(*this);
             break;
         default:
