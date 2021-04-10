@@ -1,6 +1,7 @@
 #include <iostream>
 #include <irrlicht/irrlicht.h>
 #include "management/CVar.hpp"
+#include "player/Player.hpp"
 #include "player/PlayerNode.hpp"
 #include "VengEventReceiver.hpp"
 
@@ -10,6 +11,8 @@ using namespace scene;
 using namespace video;
 using namespace io;
 using namespace gui;
+
+VengPlayer* cPlayer;
 
 int main() {
 	VengEventReceiver receiver;
@@ -26,13 +29,21 @@ int main() {
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
 	IFileSystem* fs = device->getFileSystem();
+
+	VengManagement::CVars vars = VengManagement::CVars();
+	#ifdef DEBUG
+	vars.Set_Cvar("dbg_internal_video",driver);
+	vars.Set_Cvar("dbg_internal_driver",device);
+	vars.Set_Cvar("dbg_internal_scene",smgr);
+	vars.Set_Cvar("dbg_internal_fs",fs);
+	vars.Set_Cvar("dbg_internal_gui",guienv);
+	#endif
+
 	fs->addFileArchive("rsc");
 	fs->addFileArchive("/home/techsink/models/");
 	#ifdef DEBUG
 	fs->addFileArchive("../rsc");
 	#endif
-
-    smgr->addCameraSceneNodeFPS();
 
     smgr->setShadowColor(video::SColor(150,0,0,0));
 
@@ -59,6 +70,11 @@ int main() {
 
 	PlayerNode *pNode =
         new PlayerNode(smgr->getRootSceneNode(), smgr, 666);
+	VengPlayer *pObj = new VengPlayer();
+	pObj->pN = pNode;
+
+	vars.Set_Cvar("d_internal_pnode",pNode);
+	vars.Set_Cvar("d_internal_pobjc",pObj);
 
 	while(device->run()) 
 	{
@@ -72,7 +88,9 @@ int main() {
 		guienv->drawAll();
 		driver->endScene();
 		int fps = driver->getFPS();
-		core::stringw tmp(L"Veng [");
+		core::stringw tmp(L"Veng: ");
+		tmp += (wchar_t*)vars.Get_Cvar("d_window_name");
+		tmp += L" [";
 		tmp += driver->getName();
 		tmp += L"] fps: ";
 		tmp += fps;

@@ -16,8 +16,9 @@ public:
     scene::IAnimatedMesh* Mesh;
     scene::IAnimatedMeshSceneNode* MeshNode;
     scene::ITextSceneNode* PlayerNameText;
+    scene::ICameraSceneNode* cam;
+    float EyeHeight;
 private:
-
 };
 
 #endif
