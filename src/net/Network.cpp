@@ -1,3 +1,4 @@
+#include "../player/Player.hpp"
 #include "Network.hpp"
 
 #include <string.h>
@@ -26,35 +27,52 @@ NetConnection::NetConnection(char* host, int port) {
     serv_addr.sin_port = htons(port);
     if (connect(SockFd,(struct sockaddr*)(&serv_addr),sizeof(serv_addr)) < 0)
         puts("Error: couldnt connect");
-    int CVersion = VengNet::ReadInt(SockFd);
+    int CVersion = VengReadInt(SockFd);
     printf("Server version: %i",CVersion);
     if(CVersion != 1) {
         puts("Warning: Version mismatch");
     }
-    VengNet::WriteInt(SockFd,1);
+    VengWriteInt(SockFd,1);
 }
 
-void NetConnection::SceneUpdate(irr::IrrlichtDevice* device) {
+void NetConnection::SceneUpdate(irr::IrrlichtDevice* device, void* pev) {
     int cmd;
+    VengPlayer* tpev = (VengPlayer*)pev;
     recv(SockFd,&cmd,sizeof(cmd),MSG_PEEK);
     time_t now;
+    char* reason;
+    char* from;
+    char* message;
+    char* messageglob;
     localtime(&now);
     switch(cmd) {
         case 0: // heartbeat/get time
-            VengNet::WriteInt(SockFd,(int)now);
+            VengWriteInt(SockFd,(int)now);
             break;
         case 1: // kick/disconnect
-            char* reason = VengNet::ReadString(SockFd);
+            reason = VengReadString(SockFd);
             printf("Disconnected: %s\n",reason);
             break;
         case 2: // chat
-            char* from = VengNet::ReadString(SockFd);
-            char* message = VengNet::ReadString(SockFd);
+            from = VengReadString(SockFd);
+            message = VengReadString(SockFd);
             printf("Message from %s: %s",message);
             break;
         case 3: // globchat
-            char* messageglob = VengNet::ReadString(SockFd);
+            messageglob = VengReadString(SockFd);
             printf("Globmessage: %s",messageglob);
+            break;
+        case 4: // load new skybox
+            device->getSceneManager()->addSkyBoxSceneNode(
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)),
+                device->getVideoDriver()->getTexture(VengReadString(SockFd)));
+            break;
+        case 5: // force player resync
+            tpev->SyncNet(*this);
             break;
         default:
             printf("unknown command? %i\n",cmd);

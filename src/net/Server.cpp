@@ -7,6 +7,12 @@
 #include <string.h>
 #include <netdb.h>
 
+void error(char *msg)
+{
+    perror(msg);
+    exit(1);
+}
+
 void VengServer() {
     int sockfd, newsockfd, portno, clilen, n;
     char buffer[256];
@@ -27,10 +33,4 @@ void VengServer() {
         error("ERROR on accept");
     n = send(newsockfd,"I got your message",18,0);
     if (n < 0) error("ERROR writing to socket");
-}
-
-void error(char *msg)
-{
-    perror(msg);
-    exit(1);
 }

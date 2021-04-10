@@ -20,6 +20,7 @@ VengPlayer* cPlayer;
 int main(int argc, char** argv) {
 	VengEventReceiver receiver;
 	NetConnection* currconn;
+	int novars = 0;
 
 	for(int i = 0; i<argc; i++) {
 		if(strcmp(argv[i],"dev")==0) {
@@ -29,6 +30,8 @@ int main(int argc, char** argv) {
 		IFARG_CASE("serv")
 			VengServer();
 			exit(0);
+		IFARG_CASE("novar")
+			novars = 1;
 		}
 		
 	}
@@ -48,11 +51,13 @@ int main(int argc, char** argv) {
 
 	VengManagement::CVars vars = VengManagement::CVars();
 	#ifdef DEBUG
-	vars.Set_Cvar("dbg_internal_video",driver);
-	vars.Set_Cvar("dbg_internal_driver",device);
-	vars.Set_Cvar("dbg_internal_scene",smgr);
-	vars.Set_Cvar("dbg_internal_fs",fs);
-	vars.Set_Cvar("dbg_internal_gui",guienv);
+	if(novars == 0) {
+		vars.Set_Cvar("dbg_internal_video",driver);
+		vars.Set_Cvar("dbg_internal_driver",device);
+		vars.Set_Cvar("dbg_internal_scene",smgr);
+		vars.Set_Cvar("dbg_internal_fs",fs);
+		vars.Set_Cvar("dbg_internal_gui",guienv);
+	}
 	#endif
 
 	fs->addFileArchive("rsc");
@@ -88,14 +93,16 @@ int main(int argc, char** argv) {
 	VengPlayer *pObj = new VengPlayer();
 	pObj->pN = pNode;
 
-	vars.Set_Cvar("d_internal_pnode",pNode);
-	vars.Set_Cvar("d_internal_pobjc",pObj);
+	if(novars == 0) {
+		vars.Set_Cvar("d_internal_pnode",pNode);
+		vars.Set_Cvar("d_internal_pobjc",pObj);
+	}
 
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
-        	const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // Time in seconds
-        	then = now;
+        const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // Time in seconds
+        then = now;
 
 		driver->beginScene(true,true,SColor(255,101,101,140));
 		smgr->drawAll();
@@ -103,7 +110,7 @@ int main(int argc, char** argv) {
 		guienv->drawAll();
 		driver->endScene();
 		if(!currconn) {
-			currconn->SceneUpdate(device);
+			currconn->SceneUpdate(device,pObj);
 		}
 		int fps = driver->getFPS();
 		core::stringw tmp(L"Veng: ");
