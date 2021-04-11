@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 		
 	}
 
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480),16,false,true,false);
+	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(800,600),16,false,true,false);
 
     SAppContext context;
     context.device = device;
@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 		return NULL;
 	
 	device->setWindowCaption(L"Veng");
-	device->setResizable(true);
 
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
@@ -94,8 +93,7 @@ int main(int argc, char** argv) {
         driver->getTexture("tex/sky/d0.png"),
         driver->getTexture("tex/sky/d1.png"));
 
-	guienv->addStaticText(L"VENG: Preview Build",
-        	rect<s32>(0,0,260,22), false);
+	irr::gui::IGUIStaticText* fpsCntr = guienv->addStaticText(L"Veng: 0fps", rect<s32>(0,0,260,10), false);
 
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
@@ -118,7 +116,7 @@ int main(int argc, char** argv) {
 		vars.Set_Cvar("d_internal_pobjc",pObj);
 	}
 
-
+	bool consoleDebounce = false;
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
@@ -133,8 +131,17 @@ int main(int argc, char** argv) {
 		if(*connected) {
 			currconn->SceneUpdate(device,pObj);
 		}
-		if(receiver.IsKeyDown(KEY_TAB)) {
-			GlobConsole->Open();
+		if(receiver.IsKeyDown(KEY_TAB) && !consoleDebounce) {
+			consoleDebounce = true;
+			if(!GlobConsole->Visbility)
+				GlobConsole->Open();
+			else
+				GlobConsole->Close();
+		} else if(!receiver.IsKeyDown(KEY_TAB) && consoleDebounce) {
+			consoleDebounce = false;
+		}
+		if(receiver.IsKeyDown(KEY_F4)) {
+			break;
 		}
 		int fps = driver->getFPS();
 		core::stringw tmp(L"Veng: ");
@@ -144,6 +151,7 @@ int main(int argc, char** argv) {
 		tmp += L"] fps: ";
 		tmp += fps;
 
+		fpsCntr->setText(tmp.c_str());
 		device->setWindowCaption(tmp.c_str());
 		lastFPS = fps;
 	}
