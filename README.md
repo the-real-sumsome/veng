@@ -1,4 +1,5 @@
 # VENG
+[Discord](https://discord.gg/xeEE4pDDYW)
 
 Stupid engine
 
