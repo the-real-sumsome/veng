@@ -40,15 +40,19 @@ void CVars::Reg_Var(std::string name, void* defValue) {
     GlobConsole->Logf("Registering CVar \"%s\"\t\t\twith data at %p.\n",name.c_str(),defValue);
     cvar_entry* ent = (cvar_entry*)malloc(sizeof(cvar_entry));
     ent->data = defValue;
-    ent->name = &name;
+    std::string* anam = new std::string(name);
+    ent->name = anam;
+    ent->ok = true;
     entries[entries_Size] = ent;
     entries_Size++; 
 }
 
 void* CVars::Get_Cvar(std::string name) {
     for(int i = 0; i<entries_Size; i++) {
-        if(entries[i]->name->compare(name.c_str()) == 0) {
-            return entries[i]->data;
+        if(entries[i]->ok) {
+            if(entries[i]->name->compare(name.c_str()) == 0) {
+                return entries[i]->data;
+            }
         }
     }
     return (void*)&"UnknownData";
@@ -56,10 +60,10 @@ void* CVars::Get_Cvar(std::string name) {
 
 void CVars::Set_Cvar(std::string name, void* data) {
     for(int i = 0; i<entries_Size; i++) {
-        printf("%i\n",i);
-        if(entries[i]->name->compare(name.c_str()) == 0) {
-            printf("setting %s to %p\n",name.c_str(),data);
-            entries[i]->data = data;
+        if(entries[i]->ok) {
+            if(entries[i]->name->compare(name.c_str()) == 0) {
+                entries[i]->data = data;
+            }
         }
     }
 }

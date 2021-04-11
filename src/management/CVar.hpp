@@ -7,6 +7,7 @@ namespace VengManagement {
 
 
     typedef struct {
+        bool ok;
         std::string* name;
         void* data;
     } cvar_entry;

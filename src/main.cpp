@@ -1,4 +1,7 @@
-#include <iostream>
+#include <iostream>		
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
 #include <irrlicht/irrlicht.h>
 #include "management/CVar.hpp"
 #include "management/Console.hpp"
@@ -54,8 +57,6 @@ int main(int argc, char** argv) {
 
     VengEventReceiver receiver = VengEventReceiver(context);
     device->setEventReceiver(&receiver);
-
-	GlobConsole = new VengConsole(device);
 	
 	if(!device)
 		return NULL;
@@ -66,6 +67,14 @@ int main(int argc, char** argv) {
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
 	IFileSystem* fs = device->getFileSystem();
+
+
+	GlobConsole = new VengConsole(device);
+	fs->addFileArchive("rsc");
+	#ifdef DEBUG
+	fs->addFileArchive("../rsc");
+	#endif
+	GlobConsole->PrepFinal();
 
 	VengManagement::CVars vars = VengManagement::CVars();
 	#ifdef DEBUG
@@ -78,22 +87,9 @@ int main(int argc, char** argv) {
 	}
 	#endif
 
-	fs->addFileArchive("rsc");
-	#ifdef DEBUG
-	fs->addFileArchive("../rsc");
-	#endif
-
     smgr->setShadowColor(video::SColor(150,0,0,0));
 
-    smgr->addSkyBoxSceneNode(
-        driver->getTexture("tex/sky/d3.png"),
-        driver->getTexture("tex/sky/d2.png"),
-        driver->getTexture("tex/sky/d4.png"),
-        driver->getTexture("tex/sky/d5.png"),
-        driver->getTexture("tex/sky/d0.png"),
-        driver->getTexture("tex/sky/d1.png"));
-
-	irr::gui::IGUIStaticText* fpsCntr = guienv->addStaticText(L"Veng: 0fps", rect<s32>(0,0,260,10), false);
+	irr::gui::IGUIStaticText* fpsCntr = guienv->addStaticText(L"Veng: 0fps", rect<s32>(0,0,800,10), false);
 
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
@@ -117,6 +113,9 @@ int main(int argc, char** argv) {
 	}
 
 	bool consoleDebounce = false;
+	int pevWidth;
+	int pevHeight;
+	XWindowAttributes* attr = (XWindowAttributes*)malloc(sizeof(XWindowAttributes));
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
@@ -145,15 +144,28 @@ int main(int argc, char** argv) {
 		}
 		int fps = driver->getFPS();
 		core::stringw tmp(L"Veng: ");
-		tmp += (wchar_t*)vars.Get_Cvar("d_window_name");
 		tmp += L" [";
 		tmp += driver->getName();
 		tmp += L"] fps: ";
 		tmp += fps;
+		tmp += L" | ";
+		tmp += GlobConsole->LatestLine;
 
 		fpsCntr->setText(tmp.c_str());
 		device->setWindowCaption(tmp.c_str());
 		lastFPS = fps;
+
+		// evil linux dependent code
+		irr::video::SExposedVideoData sv = driver->getExposedVideoData();
+		XGetWindowAttributes((Display*)sv.OpenGLLinux.X11Display,sv.OpenGLLinux.X11Window,attr);
+		if(pevWidth != attr->width || pevHeight != attr->height) {
+			dimension2du dimensions = dimension2du(attr->width,attr->height);
+			driver->OnResize(dimensions);
+			GlobConsole->UpdConsoleBounds();
+			GlobConsole->Logf("Resized from %ix%i -> %ix%i\n",pevWidth,pevHeight,attr->width,attr->height);
+		}
+		pevWidth = attr->width;
+		pevHeight = attr->height;
 	}
 	device->drop();
 	return 0;
