@@ -15,7 +15,11 @@ PlayerNode::PlayerNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32
         cam->setPosition(core::vector3df(BPos.X,BPos.Y+27,BPos.Z)); // eye height is 27u off the ground
         cam->bindTargetAndRotation(true);
         MeshNode->setVisible(false);
+        //anim = mgr->createCollisionResponseAnimator(
+        //    selector, this, core::vector3df(30,50,30),
+        //    core::vector3df(0,-10,0), core::vector3df(0,30,0));
     }
+    this->camEn = camEn;
 }
 
 void PlayerNode::OnRegisterSceneNode() {
@@ -30,11 +34,14 @@ void PlayerNode::render()
     video::IVideoDriver* driver = SceneManager->getVideoDriver();
 
     RelativeRotation.Y++;
-    core::vector3df CamRot = RelativeRotation;
-    core::vector3df BPos = getPosition();
-    CamRot.Y += 90;
-    cam->setRotation(CamRot);
-    cam->setPosition(core::vector3df(BPos.X,BPos.Y+27,BPos.Z));
+    if(camEn) {
+
+        core::vector3df CamRot = RelativeRotation;
+        core::vector3df BPos = getPosition();
+        CamRot.Y += 90;
+        cam->setRotation(CamRot);
+        cam->setPosition(core::vector3df(BPos.X,BPos.Y+27,BPos.Z));
+    }
 
     driver->draw3DBox(MeshNode->getBoundingBox());
 }

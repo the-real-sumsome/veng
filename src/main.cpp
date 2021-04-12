@@ -5,9 +5,10 @@
 #include <irrlicht/irrlicht.h>
 #include "management/CVar.hpp"
 #include "management/Console.hpp"
-#include "player/Player.hpp"
 #include "net/Server.hpp"
 #include "player/PlayerNode.hpp"
+#include "player/Player.hpp"
+#include "uimng/VengUI.hpp"
 #include "VengEventReceiver.hpp"
 
 using namespace irr;
@@ -68,11 +69,13 @@ int main(int argc, char** argv) {
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
 	IFileSystem* fs = device->getFileSystem();
 
-
 	GlobConsole = new VengConsole(device);
 	fs->addFileArchive("rsc");
 	#ifdef DEBUG
 	fs->addFileArchive("../rsc");
+	fs->addFileArchive("/opt/openarena/baseoa/pak0.pk3");
+	fs->addFileArchive("/opt/openarena/baseoa/pak1-maps.pk3");
+	fs->addFileArchive("/opt/openarena/baseoa/pak4-textures.pk3");
 	#endif
 	GlobConsole->PrepFinal();
 
@@ -89,12 +92,46 @@ int main(int argc, char** argv) {
 
     smgr->setShadowColor(video::SColor(150,0,0,0));
 
-	irr::gui::IGUIStaticText* fpsCntr = guienv->addStaticText(L"Veng: 0fps", rect<s32>(0,0,800,10), false);
+	IGUIStaticText* fpsCntr = guienv->addStaticText(L"Veng: 0fps", rect<s32>(0,0,800,10), false);
+
+    smgr->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
+
+    IQ3LevelMesh* q3levelmesh = (IQ3LevelMesh*)smgr->getMesh("maps/kaos.bsp");
+    ISceneNode* q3node = 0;
+    if (q3levelmesh) { 
+		IMesh * const geometry = q3levelmesh->getMesh(quake3::E_Q3_MESH_GEOMETRY);
+		q3node = smgr->addOctreeSceneNode(geometry, 0, -1, 4096);
+		const IMesh * const additional_mesh = q3levelmesh->getMesh(quake3::E_Q3_MESH_ITEMS);
+		GlobConsole->Logf("additional_mesh buffer count (usually shaders) %i\n",additional_mesh->getMeshBufferCount());
+		for ( u32 i = 0; i!= additional_mesh->getMeshBufferCount(); ++i )
+        {
+            const IMeshBuffer* meshBuffer = additional_mesh->getMeshBuffer(i);
+            const video::SMaterial& material = meshBuffer->getMaterial();
+
+            // The ShaderIndex is stored in the material parameter
+            const s32 shaderIndex = (s32) material.MaterialTypeParam2;
+
+            // the meshbuffer can be rendered without additional support, or it has no shader
+            const quake3::IShader *shader = q3levelmesh->getShader(shaderIndex);
+            if (0 == shader)
+            {
+                continue;
+            }
+
+            // we can dump the shader to the console in its
+            // original but already parsed layout in a pretty
+            // printers way.. commented out, because the console
+            // would be full...
+            // quake3::dumpShader ( Shader );
+			GlobConsole->Logf("loaded shader %s\n",shader->name.c_str());
+            q3node = smgr->addQuake3SceneNode(meshBuffer, shader);
+        }
+	}
 
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
 	const f32 MOVEMENT_SPEED = 5.f;
-    scene::ISceneNode * node = smgr->addCubeSceneNode();
+    ISceneNode * node = smgr->addCubeSceneNode();
     if (node)
     {
         node->setPosition(core::vector3df(0,0,30));
@@ -103,9 +140,11 @@ int main(int argc, char** argv) {
     }    
 
 	PlayerNode *pNode =
-        new PlayerNode(smgr->getRootSceneNode(), smgr, 666, true);
+        new PlayerNode(smgr->getRootSceneNode(), smgr, 666, false);
 	VengPlayer *pObj = new VengPlayer();
 	pObj->pN = pNode;
+
+	smgr->addCameraSceneNodeFPS();
 
 	if(novars == 0) {
 		vars.Set_Cvar("d_internal_pnode",pNode);
@@ -116,16 +155,17 @@ int main(int argc, char** argv) {
 	int pevWidth;
 	int pevHeight;
 	XWindowAttributes* attr = (XWindowAttributes*)malloc(sizeof(XWindowAttributes));
+	VengUI* uiMan = new VengUI(device);
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
         const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // Time in seconds
         then = now;
 
-		driver->beginScene(true,true,SColor(255,101,101,140));
+		driver->beginScene(false,true,SColor(255,101,101,140));
 		smgr->drawAll();
-		
 		guienv->drawAll();
+		uiMan->Draw();
 		driver->endScene();
 		if(*connected) {
 			currconn->SceneUpdate(device,pObj);
