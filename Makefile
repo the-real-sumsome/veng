@@ -18,7 +18,7 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -g -DVERSION=1
+CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -DDEBUG -DVERSION=1
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -lX11 -lpthread -lIrrlicht -ldl -o $@ $(LDFLAGS)
