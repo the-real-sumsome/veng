@@ -46,6 +46,16 @@ int main(int argc, char** argv) {
 			exit(0);
 		IFARG_CASE("novar")
 			novars = 1;
+		IFARG_CASE("license")
+			#ifdef DEBUG
+			system("cat ../rsc/txt/LICENSE_IRR.txt");
+			system("cat ../rsc/txt/LICENSE_VENG.txt");
+			system("cat ../rsc/txt/LICENSE_ASIO.txt");
+			#else
+			system("cat rsc/txt/LICENSE_IRR.txt");
+			system("cat rsc/txt/LICENSE_VENG.txt");
+			system("cat rsc/txt/LICENSE_ASIO.txt");
+			#endif
 		} else {
 			puts("Unknown starting command, going as usual");
 		}

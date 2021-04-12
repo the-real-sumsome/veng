@@ -3,10 +3,10 @@
 
 Stupid engine
 
-I retain full copyright over this until I determine it to be in a good enough state for GPLness.
+(c) PsiWerks 2021-2022, licensed under the VENGMIT license (read LICENSE in the root directory of this repository.)
 
 Required libraries:
     Irrlicht
-    Asio
+    Asio (Under BSL)
 
 Built for Linux.
