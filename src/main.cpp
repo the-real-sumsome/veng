@@ -96,38 +96,6 @@ int main(int argc, char** argv) {
 
     smgr->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
 
-    IQ3LevelMesh* q3levelmesh = (IQ3LevelMesh*)smgr->getMesh("maps/kaos.bsp");
-    ISceneNode* q3node = 0;
-    if (q3levelmesh) { 
-		IMesh * const geometry = q3levelmesh->getMesh(quake3::E_Q3_MESH_GEOMETRY);
-		q3node = smgr->addOctreeSceneNode(geometry, 0, -1, 4096);
-		const IMesh * const additional_mesh = q3levelmesh->getMesh(quake3::E_Q3_MESH_ITEMS);
-		GlobConsole->Logf("additional_mesh buffer count (usually shaders) %i\n",additional_mesh->getMeshBufferCount());
-		for ( u32 i = 0; i!= additional_mesh->getMeshBufferCount(); ++i )
-        {
-            const IMeshBuffer* meshBuffer = additional_mesh->getMeshBuffer(i);
-            const video::SMaterial& material = meshBuffer->getMaterial();
-
-            // The ShaderIndex is stored in the material parameter
-            const s32 shaderIndex = (s32) material.MaterialTypeParam2;
-
-            // the meshbuffer can be rendered without additional support, or it has no shader
-            const quake3::IShader *shader = q3levelmesh->getShader(shaderIndex);
-            if (0 == shader)
-            {
-                continue;
-            }
-
-            // we can dump the shader to the console in its
-            // original but already parsed layout in a pretty
-            // printers way.. commented out, because the console
-            // would be full...
-            // quake3::dumpShader ( Shader );
-			GlobConsole->Logf("loaded shader %s\n",shader->name.c_str());
-            q3node = smgr->addQuake3SceneNode(meshBuffer, shader);
-        }
-	}
-
 	int lastFPS = -1;
 	u32 then = device->getTimer()->getTime();
 	const f32 MOVEMENT_SPEED = 5.f;
