@@ -9,6 +9,7 @@
 #include "player/PlayerNode.hpp"
 #include "player/Player.hpp"
 #include "uimng/VengUI.hpp"
+#include "etc/Q3Map.hpp"
 #include "VengEventReceiver.hpp"
 
 using namespace irr;
@@ -124,6 +125,7 @@ int main(int argc, char** argv) {
 	int pevHeight;
 	XWindowAttributes* attr = (XWindowAttributes*)malloc(sizeof(XWindowAttributes));
 	VengUI* uiMan = new VengUI(device);
+	q3map::LoadMap(device,"map/stupid.bsp");
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();

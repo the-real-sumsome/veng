@@ -3,7 +3,13 @@
 #include <irrlicht/irrlicht.h>
 
 namespace q3map {
-    void LoadMap(irr::IrrlichtDevice*, char* name);
+    typedef struct {
+        irr::scene::IQ3LevelMesh* q3levelmesh;
+        irr::scene::ISceneNode* q3node;
+        irr::scene::IMesh* geometry;
+        irr::scene::IMesh* additional_mesh;
+    } q3loaded_map;
+    q3loaded_map* LoadMap(irr::IrrlichtDevice*, char* name);
 }
 
 #endif
