@@ -1,4 +1,5 @@
 #include "../management/Console.hpp"
+#include "../management/CVar.hpp"
 #include "Q3Map.hpp"
 
 q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
@@ -12,7 +13,8 @@ q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
     if (q3levelmesh) { 
 		irr::scene::IMesh * const geometry = q3levelmesh->getMesh(irr::scene::quake3::E_Q3_MESH_GEOMETRY);
         map->geometry = geometry;
-		q3node = smgr->addOctreeSceneNode(geometry, 0, -1, 4096);
+		map->g_node = smgr->addOctreeSceneNode(geometry, 0, -1, 4096);
+        q3node = map->g_node;
 		const irr::scene::IMesh * const additional_mesh = q3levelmesh->getMesh(irr::scene::quake3::E_Q3_MESH_ITEMS);
         map->additional_mesh = (irr::scene::IMesh *)additional_mesh;
 		GlobConsole->Logf("additional_mesh buffer count (usually shaders) %i\n",additional_mesh->getMeshBufferCount());
@@ -85,11 +87,16 @@ q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
 
                 irr::u32 parsepos = 0;
 
+                irr::core::vector3df v3df = irr::scene::quake3::getAsVector3df(group->get("origin"),parsepos);
                 // make lights
+                GlobConsole->Logf("new light at %f,%f,%f\n",v3df.X,v3df.Y,v3df.Z);
+                dev->getSceneManager()->addLightSceneNode(dev->getSceneManager()->getRootSceneNode(),v3df);
 
                 ++index;
                 notEndList = index == 2;
             } while ( notEndList );
         }
 	}
+    GlobalCVars->Set_Cvar("map_current",map);
+    return map;
 }

@@ -73,6 +73,9 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "serialization.h": "c"
+        "serialization.h": "c",
+        "any": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp"
     }
 }

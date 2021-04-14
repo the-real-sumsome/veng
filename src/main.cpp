@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 	int* connected = (int*)malloc(sizeof(int));
 	*connected = 0;
 	int novars = 0;
+	E_DRIVER_TYPE cDrv = video::EDT_OPENGL;
 
 	for(int i = 1; i<argc; i++) {
 		if(strcmp(argv[i],"dev")==0) {
@@ -56,13 +57,15 @@ int main(int argc, char** argv) {
 			system("cat rsc/txt/LICENSE_VENG.txt");
 			system("cat rsc/txt/LICENSE_ASIO.txt");
 			#endif
+		IFARG_CASE("null")
+			cDrv = video::EDT_NULL;
 		} else {
 			puts("Unknown starting command, going as usual");
 		}
 		
 	}
 
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(800,600),16,false,true,false);
+	IrrlichtDevice *device = createDevice(cDrv, core::dimension2d<u32>(800,600),16,false,true,false);
 
     SAppContext context;
     context.device = device;
@@ -115,19 +118,19 @@ int main(int argc, char** argv) {
     {
         node->setPosition(core::vector3df(0,0,30));
         node->setMaterialTexture(0, driver->getTexture("tex/Bricks11.png"));
-        node->setMaterialFlag(video::EMF_LIGHTING, false);
+        //node->setMaterialFlag(video::EMF_LIGHTING, true);
     }    
 
 	PlayerNode *pNode =
         new PlayerNode(smgr->getRootSceneNode(), smgr, 666, false);
-	VengPlayer *pObj = new VengPlayer();
-	pObj->pN = pNode;
+	cPlayer = new VengPlayer();
+	cPlayer->pN = pNode;
 
 	smgr->addCameraSceneNodeFPS();
 
 	if(novars == 0) {
 		vars.Set_Cvar("d_internal_pnode",pNode);
-		vars.Set_Cvar("d_internal_pobjc",pObj);
+		vars.Set_Cvar("d_internal_pobjc",cPlayer);
 	}
 
 	bool consoleDebounce = false;
@@ -135,7 +138,8 @@ int main(int argc, char** argv) {
 	int pevHeight;
 	XWindowAttributes* attr = (XWindowAttributes*)malloc(sizeof(XWindowAttributes));
 	VengUI* uiMan = new VengUI(device);
-	q3map::LoadMap(device,"map/stupid.bsp");
+	q3map::q3loaded_map* mp = q3map::LoadMap(device,"map/stupid.bsp");
+	//mp->g_node->setMaterialFlag(EMF_WIREFRAME,true);
 	while(device->run()) 
 	{
 		const u32 now = device->getTimer()->getTime();
@@ -148,7 +152,7 @@ int main(int argc, char** argv) {
 		uiMan->Draw();
 		driver->endScene();
 		if(*connected) {
-			currconn->SceneUpdate(device,pObj);
+			currconn->SceneUpdate(device,cPlayer);
 		}
 		if(receiver.IsKeyDown(KEY_TAB) && !consoleDebounce) {
 			consoleDebounce = true;

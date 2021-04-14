@@ -10,7 +10,7 @@ namespace vengui {
         virtual void Render();
         virtual venguiinfo_t GetInfo();
     private:
-    
+        irr::video::ITexture* cooltext;
     };
 }
 

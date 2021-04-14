@@ -1,4 +1,5 @@
 #include "Console.hpp"
+#include "CVar.hpp"
 #include <stdarg.h>
 
 VengConsole* GlobConsole = 0;
@@ -123,6 +124,18 @@ void VengConsole::Do(wchar_t* cmd) {
             Logf("enter pack location\n");
             waitingForInput = true;
             selMode = VIC_LDPAK;
+        } else if(strcmp(output,"cvars")==0) {
+            std::vector<VengManagement::cvar_entry*> cvars = GlobalCVars->Get_Cvars();
+            for(int i = 0; i<cvars.size(); i++) {
+                if(cvars[i]->ok) {
+                    Logf("cvar: %s@%p, type = %i\n",cvars[i]->name->c_str(),cvars[i]->data,cvars[i]->type);
+                } else {
+                    Logf("cvar not ok?\n");
+                }
+            }
+        } else if(strcmp(output,"quit")==0) {
+            device->drop();
+            exit(0);
         } else {
             puts("Unknown starting command, going as usual");
         }

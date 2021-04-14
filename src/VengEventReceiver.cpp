@@ -37,19 +37,19 @@ bool VengEventReceiver::OnEvent(const SEvent& event)
     {
         switch(event.LogEvent.Level) { 
             case irr::ELL_ERROR:
-                GlobConsole->Logf("[ERROR]>%s\n",event.LogEvent.Text);
+                GlobConsole->Logf("Irrlicht: [ERROR]>%s\n",event.LogEvent.Text);
                 break;
             case irr::ELL_WARNING:
-                GlobConsole->Logf("[WARN]>%s\n",event.LogEvent.Text);
+                GlobConsole->Logf("Irrlicht: [WARN]>%s\n",event.LogEvent.Text);
                 break;
             case irr::ELL_INFORMATION:
-                GlobConsole->Logf("[INFO]>%s\n",event.LogEvent.Text);
+                GlobConsole->Logf("Irrlicht: [INFO]>%s\n",event.LogEvent.Text);
                 break;
             case irr::ELL_DEBUG:
-                GlobConsole->Logf("[DEBG]>%s\n",event.LogEvent.Text);
+                GlobConsole->Logf("Irrlicht: [DEBG]>%s\n",event.LogEvent.Text);
                 break;
             case irr::ELL_NONE:
-                GlobConsole->Logf("[????]>%s\n",event.LogEvent.Text);
+                GlobConsole->Logf("Irrlicht: [????]>%s\n",event.LogEvent.Text);
                 break;
             default:
                 GlobConsole->Logf("[%i]>%s\n",event.LogEvent.Level,event.LogEvent.Text);
