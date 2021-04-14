@@ -32,8 +32,8 @@ int main(int argc, char** argv) {
 
 	for(int i = 1; i<argc; i++) {
 		if(strcmp(argv[i],"dev")==0) {
-			
-		IFARG_CASE("net")
+			/// TODO: this
+		IFARG_CASE("net") // connect network
 			char* serv = argv[i+1];
 			printf("Conencting to %s on port 8364\n");
 			currconn = new NetConnection(serv,"8364");
@@ -42,12 +42,12 @@ int main(int argc, char** argv) {
 				puts("Error: unable to connect to remote");
 				exit(1);
 			}
-		IFARG_CASE("host")
+		IFARG_CASE("host") // host server
 			VengServer();
 			exit(0);
 		IFARG_CASE("novar")
 			novars = 1;
-		IFARG_CASE("license")
+		IFARG_CASE("license") // cat all licenses
 			#ifdef DEBUG
 			system("cat ../rsc/txt/LICENSE_IRR.txt");
 			system("cat ../rsc/txt/LICENSE_VENG.txt");
@@ -57,17 +57,19 @@ int main(int argc, char** argv) {
 			system("cat rsc/txt/LICENSE_VENG.txt");
 			system("cat rsc/txt/LICENSE_ASIO.txt");
 			#endif
+			exit(0);
 		IFARG_CASE("null")
-			cDrv = video::EDT_NULL;
+			cDrv = video::EDT_NULL; // This apparently throws a segmentation fault when rendering
 		} else {
 			puts("Unknown starting command, going as usual");
 		}
 		
 	}
 
-	IrrlichtDevice *device = createDevice(cDrv, core::dimension2d<u32>(800,600),16,false,true,false);
-
-    SAppContext context;
+	IrrlichtDevice *device = createDevice(cDrv, core::dimension2d<u32>(800,600),16,false,true,false); // create device
+ 
+    SAppContext context; // SAppContext is the context for the VengEventReceiver.
+						 // should contain references to gui objects 4
     context.device = device;
 
     VengEventReceiver receiver = VengEventReceiver(context);
@@ -87,7 +89,7 @@ int main(int argc, char** argv) {
 	fs->addFileArchive("rsc");
 	#ifdef DEBUG
 	fs->addFileArchive("../rsc");
-	fs->addFileArchive("/opt/openarena/baseoa/pak0.pk3");
+	fs->addFileArchive("/opt/openarena/baseoa/pak0.pk3"); // OpenArena testing
 	fs->addFileArchive("/opt/openarena/baseoa/pak1-maps.pk3");
 	fs->addFileArchive("/opt/openarena/baseoa/pak4-textures.pk3");
 	#endif
