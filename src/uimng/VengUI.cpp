@@ -3,6 +3,7 @@
 #include "../management/Console.hpp"
 
 venguiinfo_t IVengUiObject::GetInfo() {
+    // this returns the venguiinfo_t about a certain VengUI
     venguiinfo_t guiInfo;
     guiInfo.visibility = true;
     return guiInfo;
@@ -22,11 +23,14 @@ VengUI::VengUI(irr::IrrlichtDevice* device) : VengUiObjects() {
     this->device = device;
     IVengUiObject* tmp;
     // initialize VengUI objects
+    // PVNG and then do new vengui::NAME OF CLASS(device) or however you construct it, but make sure its a pointer
     PVNG(new vengui::example(device));
 }
 
 void VengUI::Draw() {
+    // go through each and call its render function
     for(int i = 0; i<VengUiObjects.size(); i++) {
+        // render this
         VengUiObjects[i]->Render();
     }
 }

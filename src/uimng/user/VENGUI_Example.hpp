@@ -2,6 +2,9 @@
 #define __VENGUI_EXAMPLE_HPP__
 #include "../VengUI.hpp"
 
+// all user venguis should be in the namspace vengui
+// this is vengui::example
+
 namespace vengui {
     class example : public IVengUiObject {
     public:

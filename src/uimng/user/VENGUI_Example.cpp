@@ -6,6 +6,7 @@ namespace vengui {
 
     }
     void example::Init() {
+        // initialize variables
         cooltext = device->getVideoDriver()->getTexture("font.bmp");
     }
     void example::Render() {

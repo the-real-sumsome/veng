@@ -40,6 +40,7 @@ void CVars::Reg_Var(CVarType type, std::string name, void* defValue) {
         abort();
     }
     GlobConsole->Logf("Registering CVar \"%s\"\t\t\twith data at %p of type %i.\n",name.c_str(),defValue,type);
+    // create new cvar_entry
     cvar_entry* ent = (cvar_entry*)malloc(sizeof(cvar_entry));
     ent->data = defValue;
     std::string* anam = new std::string(name);
@@ -47,14 +48,14 @@ void CVars::Reg_Var(CVarType type, std::string name, void* defValue) {
     ent->type = type;
     ent->ok = true;
     entries[entries_Size] = ent;
-    entries_Size++; 
+    entries_Size++; // inc size
 }
 
 void* CVars::Get_Cvar(std::string name) {
     for(int i = 0; i<entries_Size; i++) {
         if(entries[i]->ok) {
             if(entries[i]->name->compare(name.c_str()) == 0) {
-                return entries[i]->data;
+                return entries[i]->data; // compare allnames with std::string name
             }
         }
     }
@@ -65,7 +66,7 @@ std::vector<cvar_entry*> CVars::Get_Cvars() {
     std::vector<cvar_entry*> entriesvector;
     for(int i = 0; i<entries_Size; i++) {
         if(entries[i]->ok) {
-            entriesvector.push_back(entries[i]);
+            entriesvector.push_back(entries[i]); // return all strings if ok flag is on
         }
     }
     return entriesvector;
@@ -75,7 +76,7 @@ void CVars::Set_Cvar(std::string name, void* data) {
     for(int i = 0; i<entries_Size; i++) {
         if(entries[i]->ok) {
             if(entries[i]->name->compare(name.c_str()) == 0) {
-                entries[i]->data = data;
+                entries[i]->data = data; // set the value thats found to data
             }
         }
     }

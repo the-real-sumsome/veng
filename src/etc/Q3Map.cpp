@@ -11,10 +11,13 @@ q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
     map->q3levelmesh = q3levelmesh;
     map->q3node = q3node;
     if (q3levelmesh) { 
+        // the geometry is the normal 3d non-shadered content of the level
+        // e.g. walls, floors
 		irr::scene::IMesh * const geometry = q3levelmesh->getMesh(irr::scene::quake3::E_Q3_MESH_GEOMETRY);
         map->geometry = geometry;
 		map->g_node = smgr->addOctreeSceneNode(geometry, 0, -1, 4096);
         q3node = map->g_node;
+        // the additional mesh is all the other junk, like shaders and the like
 		const irr::scene::IMesh * const additional_mesh = q3levelmesh->getMesh(irr::scene::quake3::E_Q3_MESH_ITEMS);
         map->additional_mesh = (irr::scene::IMesh *)additional_mesh;
 		GlobConsole->Logf("additional_mesh buffer count (usually shaders) %i\n",additional_mesh->getMeshBufferCount());
@@ -33,15 +36,12 @@ q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
                 continue;
             }
 
-            // we can dump the shader to the console in its
-            // original but already parsed layout in a pretty
-            // printers way.. commented out, because the console
-            // would be full...
-            // quake3::dumpShader ( Shader );
 			GlobConsole->Logf("loaded shader %s\n",shader->name.c_str());
+            // add that as a q3 scene node
             q3node = smgr->addQuake3SceneNode(meshBuffer, shader);
         }
 
+        // find a info_veng_sky node
         irr::scene::quake3::tQ3EntityList &entityList = q3levelmesh->getEntityList();
 
         irr::scene::quake3::IEntity search;
@@ -76,7 +76,8 @@ q3map::q3loaded_map* q3map::LoadMap(irr::IrrlichtDevice* dev, char* name) {
 
 
         search.name = "light";
-
+        
+        // find lights (apparently these arent packaged in with the bsp)
         index = entityList.binary_search(search);
         if (index >= 0)
         {

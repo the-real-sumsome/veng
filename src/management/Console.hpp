@@ -11,6 +11,7 @@ enum VengInputMode {
     VIC_UNKNOWN,
     VIC_SKBOX,
     VIC_LDPAK,
+    VIC_USER,
 };
 
 class VengConsole {

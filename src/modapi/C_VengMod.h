@@ -1,7 +1,7 @@
 #ifndef __C_VENGMOD_H__
 #define __C_VENGMOD_H__
 #ifdef __cplusplus
-#include "VengMod.hpp"
+
 #else
 #include <stdbool.h>
 #endif
